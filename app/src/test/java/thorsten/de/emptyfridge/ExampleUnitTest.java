@@ -1,4 +1,4 @@
-package thorsten.de.emptyfridge;
+package de.thorsten.emptyfridge;
 
 import org.junit.Test;
 

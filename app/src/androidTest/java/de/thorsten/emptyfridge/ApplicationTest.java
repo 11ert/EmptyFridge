@@ -1,4 +1,4 @@
-package thorsten.de.emptyfridge;
+package de.thorsten.emptyfridge;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
