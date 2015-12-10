@@ -137,6 +137,8 @@ public class MainActivity extends Activity {
                             Toast.makeText(MainActivity.this, "You Clicked at " + shoppinglist.get(+position).get("name"), Toast.LENGTH_SHORT).show();
 
                         }
+                           //test
+                        
                     });
 
                 }

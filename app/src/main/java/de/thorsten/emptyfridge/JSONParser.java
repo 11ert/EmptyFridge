@@ -8,6 +8,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,6 +25,7 @@ public class JSONParser {
 
     static InputStream is = null;
     static JSONObject jObj = null;
+    static JSONArray jsonArray = null;
     static String json = "";
 
     // constructor
@@ -73,12 +75,15 @@ public class JSONParser {
 
         // try parse the string to a JSON object
         try {
-            jObj = new JSONObject(json);
+            //jObj = new JSONObject(json);
+            jsonArray = new JSONArray(json);
+            jObj = jsonArray.getJSONObject(0); // todo nur zum Test
         } catch (JSONException e) {
             Log.e("JSON Parser", "Error parsing data " + e.toString());
         }
 
         // return JSON String
+        //return jObj;
         return jObj;
 
     }
