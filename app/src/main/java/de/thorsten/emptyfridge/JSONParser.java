@@ -33,7 +33,7 @@ public class JSONParser {
 
     }
 
-    public JSONObject getJSONFromUrl(String url) {
+    public JSONArray getJSONFromUrl(String url) {
 
         // Making HTTP request
         try {
@@ -77,14 +77,10 @@ public class JSONParser {
         try {
             //jObj = new JSONObject(json);
             jsonArray = new JSONArray(json);
-            jObj = jsonArray.getJSONObject(0); // todo nur zum Test
         } catch (JSONException e) {
             Log.e("JSON Parser", "Error parsing data " + e.toString());
         }
-
-        // return JSON String
-        //return jObj;
-        return jObj;
+        return jsonArray;
 
     }
 

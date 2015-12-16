@@ -29,17 +29,14 @@ public class MainActivity extends Activity {
     Button Btngetdata;
     ArrayList<HashMap<String, String>> shoppinglist = new ArrayList<HashMap<String, String>>();
 
-    //URL to get JSON Array
-    //private static String url = "http://api.learn2crack.com/android/jsonos/";
-    private static String url = "http://10.0.2.2:8080/shopping/rest/shoppingitems";
+//    private static String url = "http://10.0.2.2:8080/shopping/rest/shoppingitems";
+    private static String url = "http://shoppinglist-11ert.rhcloud.com/shopping/rest/shoppingitems";
+
     //JSON Node Names
-    private static final String TAG_OS = "android";
-    private static final String TAG_VER = "ver";
-//    private static final String TAG_API = "api";
+    private static final String TAG_VER = "version";
     private static final String TAG_NAME = "name";
 
-    JSONArray android = null;
-    JSONArray names = null;
+    JSONArray shoppingItems = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,26 +45,27 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         shoppinglist = new ArrayList<HashMap<String, String>>();
 
-        Btngetdata = (Button)findViewById(R.id.getdata);
-        Btngetdata.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                new JSONParse().execute();
-
-            }
-        });
+//        Btngetdata = (Button) findViewById(R.id.getdata);
+//        Btngetdata.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View view) {
+        new JSONParse().execute();
+//
+//            }
+//        });
 
     }
 
-    private class JSONParse extends AsyncTask<String, String, JSONObject> {
+    private class JSONParse extends AsyncTask<String, String, JSONArray> {
         private ProgressDialog pDialog;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            ver = (TextView)findViewById(R.id.vers);
-            name = (TextView)findViewById(R.id.name);
-            //api = (TextView)findViewById(R.id.api);
+            //ver = (TextView) findViewById(R.id.vers);
+            name = (TextView) findViewById(R.id.name);
+
             pDialog = new ProgressDialog(MainActivity.this);
             pDialog.setMessage("Getting Data ...");
             pDialog.setIndeterminate(false);
@@ -77,56 +75,47 @@ public class MainActivity extends Activity {
         }
 
         @Override
-        protected JSONObject doInBackground(String... args) {
+        protected JSONArray doInBackground(String... args) {
 
             JSONParser jParser = new JSONParser();
 
             // Getting JSON from URL
             Log.d("url: ", "> " + url);
-            JSONObject json = jParser.getJSONFromUrl(url);
-            if (json == null)
-                Log.d("json"," is null");
-            else
-                Log.d("Response: ", "> " + json.toString());
+            JSONArray json = jParser.getJSONFromUrl(url);
 
             return json;
         }
+
         @Override
-        protected void onPostExecute(JSONObject json) {
+        protected void onPostExecute(JSONArray json) {
             pDialog.dismiss();
             try {
-                // Getting JSON Array from URL
-//                android = json.getJSONArray(TAG_OS);
-//                for(int i = 0; i < android.length(); i++){
-                names = json.getJSONArray(TAG_NAME);
+
                 Log.d("json.length=", "json.length = " + json.length());
 
-                for(int i = 0; i < names.length(); i++){
+                for (int i = 0; i < json.length(); i++) {
 
-                    JSONObject c = names.getJSONObject(i);
+                    JSONObject c = json.getJSONObject(i);
 
-                    // Storing  JSON item in a Variable
                     String ver = c.getString(TAG_VER);
                     String name = c.getString(TAG_NAME);
-                    //String api = c.getString(TAG_API);
-
-                    // Adding value HashMap key => value
 
                     HashMap<String, String> map = new HashMap<String, String>();
 
                     map.put(TAG_VER, ver);
                     map.put(TAG_NAME, name);
-                    //map.put(TAG_API, api);
 
                     shoppinglist.add(map);
-                    list=(ListView)findViewById(R.id.list);
+                    list = (ListView) findViewById(R.id.list);
+
+//                    ListAdapter adapter = new SimpleAdapter(MainActivity.this, shoppinglist,
+//                            R.layout.list_v,
+//                            new String[]{TAG_VER, TAG_NAME}, new int[]{
+//                            R.id.vers, R.id.name});
 
                     ListAdapter adapter = new SimpleAdapter(MainActivity.this, shoppinglist,
                             R.layout.list_v,
-                            //new String[] { TAG_VER,TAG_NAME, TAG_API }, new int[] {
-                            //R.id.vers,R.id.name, R.id.api});
-                            new String[] { TAG_VER, TAG_NAME }, new int[] {
-                            R.id.vers, R.id.name});
+                            new String[]{TAG_NAME}, new int[]{R.id.name});
 
                     list.setAdapter(adapter);
                     list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -137,8 +126,8 @@ public class MainActivity extends Activity {
                             Toast.makeText(MainActivity.this, "You Clicked at " + shoppinglist.get(+position).get("name"), Toast.LENGTH_SHORT).show();
 
                         }
-                           //test
-                        
+                        //test
+
                     });
 
                 }

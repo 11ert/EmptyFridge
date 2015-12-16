@@ -4,11 +4,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/vers"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        />
+    <!--<TextView-->
+        <!--android:id="@+id/vers"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--/>-->
 
     <TextView
         android:id="@+id/name"
@@ -16,10 +16,5 @@
         android:layout_height="wrap_content"
         />
 
-    <TextView
-        android:id="@+id/api"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        />
 
 </LinearLayout>
