@@ -2,6 +2,8 @@ package de.thorsten.emptyfridge;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,11 +27,20 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.iid.InstanceID;
+
 import de.thorsten.emptyfridge.model.ShoppingItem;
 
 public class MainActivity extends Activity {
     ListView list;
     TextView name;
+
+    GoogleCloudMessaging gcm;
+    String regId;
+
 
     ArrayList<HashMap<String, String>> shoppinglist = new ArrayList<HashMap<String, String>>();
 
@@ -43,6 +54,11 @@ public class MainActivity extends Activity {
     JSONArray shoppingItems = null;
     private ShoppingItem newShoppingItem;
 
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private static final String TAG = "MainActivity";
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +66,11 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         shoppinglist = new ArrayList<HashMap<String, String>>();
 
+        if (checkPlayServices()) {
+            // Start IntentService to register this application with GCM.
+            Intent intent = new Intent(this, RegistrationIntentService.class);
+            startService(intent);
+        }
         final EditText inputText = (EditText) findViewById(R.id.editText);
         inputText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -179,6 +200,27 @@ public class MainActivity extends Activity {
 
 
         }
+    }
+
+    /**
+     * Check the device to make sure it has the Google Play Services APK. If
+     * it doesn't, display a dialog that allows users to download the APK from
+     * the Google Play Store or enable it in the device's system settings.
+     */
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+                        .show();
+            } else {
+                Log.i(TAG, "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        return true;
     }
 }
 
