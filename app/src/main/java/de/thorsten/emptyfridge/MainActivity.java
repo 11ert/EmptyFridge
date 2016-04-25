@@ -33,6 +33,7 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
 import de.thorsten.emptyfridge.model.ShoppingItem;
+import de.thorsten.emptyfridge.service.RegistrationIntentService;
 
 public class MainActivity extends Activity {
     ListView list;
