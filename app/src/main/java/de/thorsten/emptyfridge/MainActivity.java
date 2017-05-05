@@ -4,15 +4,14 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Adapter;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -24,14 +23,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.iid.InstanceID;
 
+import de.thorsten.emptyfridge.model.GcmClient;
 import de.thorsten.emptyfridge.model.ShoppingItem;
 import de.thorsten.emptyfridge.service.RegistrationIntentService;
 
@@ -40,13 +42,17 @@ public class MainActivity extends Activity {
     TextView name;
 
     GoogleCloudMessaging gcm;
-    String regId;
+    private String regId; // GCM registrationID
+    private GcmClient gcmClient;
+
+    private final static String PROJECT_NUMBER = "658066193543";
 
 
     ArrayList<HashMap<String, String>> shoppinglist = new ArrayList<HashMap<String, String>>();
 
-    private static String url = "http://10.0.2.2:8080/shopping/rest/shoppingitems";
-    //private static String url = "http://shoppinglist-11ert.rhcloud.com/shopping/rest/shoppingitems";
+    //private static String shoppingitemsUrl = "http://10.0.2.2:8080/shopping/rest/shoppingitems";
+    private static final String shoppingitemsUrl = "http://shoppinglist-11ert.rhcloud.com/shopping/rest/shoppingitems";
+    private static final String gcmClientRegistrationUrl = "http://shoppinglist-11ert.rhcloud.com/shopping/rest/gcmclients";
 
     //JSON Node Names
     private static final String TAG_VER = "version";
@@ -72,6 +78,24 @@ public class MainActivity extends Activity {
             Intent intent = new Intent(this, RegistrationIntentService.class);
             startService(intent);
         }
+
+        SharedPreferences settings = getSharedPreferences("PREFS_NAME", 0);
+        boolean isFirstRun = settings.getBoolean("FIRST_RUN", false);
+
+        // In case app is installed first time, initialize GCM with registration ID
+        if (!isFirstRun) {
+            Log.d("FirstRun", "FirstRun!");
+            // do the thing for the first time
+            settings = getSharedPreferences("PREFS_NAME", 0);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putBoolean("FIRST_RUN", true);
+            getRegId();
+            new RegisterGcmClientAsyncTask().execute(gcmClientRegistrationUrl);
+            editor.commit();
+        } else {
+            Log.d("FirstRun=", "Not FirstRun");
+        }
+
         final EditText inputText = (EditText) findViewById(R.id.editText);
         inputText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -81,7 +105,7 @@ public class MainActivity extends Activity {
   //                  Toast.makeText(inputText.getContext(), v.getText(), Toast.LENGTH_SHORT).show();
                     newShoppingItem  = new ShoppingItem();
                     newShoppingItem.setName(v.getText().toString());
-                    new WriteShoppingItemAsyncTask().execute(url);
+                    new WriteShoppingItemAsyncTask().execute(shoppingitemsUrl);
                     inputText.getText().clear();
                 }
                 return false;
@@ -124,8 +148,8 @@ public class MainActivity extends Activity {
             JSONParser jParser = new JSONParser();
 
             // Getting JSON from URL
-            Log.d("url: ", "> " + url);
-            JSONArray json = jParser.getJSONFromUrl(url);
+            Log.d("shoppingitemsUrl: ", "> " + shoppingitemsUrl);
+            JSONArray json = jParser.getJSONFromUrl(shoppingitemsUrl);
 
             return json;
         }
@@ -182,6 +206,36 @@ public class MainActivity extends Activity {
 
         }
     }
+
+    public void getRegId(){
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                String msg = "";
+                try {
+                    if (gcm == null) {
+                        gcm = GoogleCloudMessaging.getInstance(getApplicationContext());
+                    }
+
+                    regId = gcm.register(PROJECT_NUMBER);
+                    msg = "Device registered, registration ID=" + regId;
+                    Log.i("GCM",  msg);
+
+                } catch (IOException ex) {
+                    msg = "Error :" + ex.getMessage();
+
+                }
+                return msg;
+            }
+
+            @Override
+            protected void onPostExecute(String msg) {
+                Log.d("RegistrationID = ", msg);
+            }
+        }.execute(null, null, null);
+    }
+
+
     private class WriteShoppingItemAsyncTask extends AsyncTask<String, Void, String> {
 
         @Override
@@ -202,6 +256,25 @@ public class MainActivity extends Activity {
 
         }
     }
+
+    private class RegisterGcmClientAsyncTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... urls) {
+            gcmClient = new GcmClient();
+            gcmClient.setId(new AtomicLong().incrementAndGet());
+            gcmClient.setRegId(regId);
+            GcmClientRegistrationService gcmClientRegistrationService = new GcmClientRegistrationService(gcmClient);
+            return gcmClientRegistrationService.POST(urls[0], gcmClient);
+        }
+
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(String result) {
+            Log.d("RegisterGcm", "RegisterGcmClientAsyncTask executed with regID=" + regId);
+        }
+    }
+
 
     /**
      * Check the device to make sure it has the Google Play Services APK. If
