@@ -26,7 +26,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -35,7 +34,6 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import de.thorsten.emptyfridge.model.GcmClient;
 import de.thorsten.emptyfridge.model.ShoppingItem;
-import de.thorsten.emptyfridge.service.RegistrationIntentService;
 
 public class MainActivity extends Activity {
     ListView list;
@@ -51,8 +49,10 @@ public class MainActivity extends Activity {
     ArrayList<HashMap<String, String>> shoppinglist = new ArrayList<HashMap<String, String>>();
 
     //private static String shoppingitemsUrl = "http://10.0.2.2:8080/shopping/rest/shoppingitems";
-    private static final String shoppingitemsUrl = "http://shoppinglist-11ert.rhcloud.com/shopping/rest/shoppingitems";
-    private static final String gcmClientRegistrationUrl = "http://shoppinglist-11ert.rhcloud.com/shopping/rest/gcmclients";
+    //private static String baseUrl = "http://10.0.2.2:8080/shopping/rest/";
+    private static String baseUrl = "http://shoppinglist-11ert.rhcloud.com/shopping/rest/";
+    private static final String shoppingitemsUrl = baseUrl + "shoppingitems";
+    private static final String gcmClientRegistrationUrl = baseUrl + "gcmclients";
 
     //JSON Node Names
     private static final String TAG_VER = "version";
@@ -74,7 +74,7 @@ public class MainActivity extends Activity {
         shoppinglist = new ArrayList<HashMap<String, String>>();
 
         if (checkPlayServices()) {
-            // Start IntentService to register this application with GCM.
+            // Start IntentService to re    gister this application with GCM.
             Intent intent = new Intent(this, RegistrationIntentService.class);
             startService(intent);
         }
@@ -82,6 +82,8 @@ public class MainActivity extends Activity {
         SharedPreferences settings = getSharedPreferences("PREFS_NAME", 0);
         boolean isFirstRun = settings.getBoolean("FIRST_RUN", false);
 
+        // nur zu Testzwecken, dann wieder raus...:
+        //getRegId();
         // In case app is installed first time, initialize GCM with registration ID
         if (!isFirstRun) {
             Log.d("FirstRun", "FirstRun!");
@@ -94,6 +96,7 @@ public class MainActivity extends Activity {
             editor.commit();
         } else {
             Log.d("FirstRun=", "Not FirstRun");
+            getRegId();
         }
 
         final EditText inputText = (EditText) findViewById(R.id.editText);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.thorsten.emptyfridge.service;
+package de.thorsten.emptyfridge;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -54,7 +54,7 @@ public class RegistrationIntentService extends IntentService {
             // See https://developers.google.com/cloud-messaging/android/start for details on this file.
             // [START get_token]
             InstanceID instanceID = InstanceID.getInstance(this);
- //           String token = instanceID.getToken(getString(R.string.gcm_defaultSenderId),
+            //           String token = instanceID.getToken(getString(R.string.gcm_defaultSenderId),
             String token = instanceID.getToken(SENDER_ID,
                     GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
             // [END get_token]
